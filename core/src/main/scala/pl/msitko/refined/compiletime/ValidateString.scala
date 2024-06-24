@@ -20,12 +20,13 @@ object ValidateString:
           case _: false =>
             showPredicateV[E](constValue[V])
       case _: And[a, b] =>
-        // workaround for: https://github.com/lampepfl/dotty/issues/12715
-        inline val res = validate[V, a]
-        inline res match
-          case null =>
-            validate[V, b]
-          case _ => res
+        inline validate[V, a] match
+          case null => validate[V, b]
+          case _ => 
+            // inline vals cannot be null, so we cannot use that here for optimisation.
+            // In the future, this could be changed into
+            // `case res => res`, but the issue preventing this is not fixed on LTS yet.
+            validate[V, a]
       case _: Or[a, b] =>
         inline validate[V, a] match
           case null => null
